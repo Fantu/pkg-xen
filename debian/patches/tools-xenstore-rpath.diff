@@ -1,0 +1,13 @@
+Index: xen-4.4.0~rc3+20140210/tools/xenstore/Makefile
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/xenstore/Makefile	2014-02-10 12:56:11.026715430 +0100
++++ xen-4.4.0~rc3+20140210/tools/xenstore/Makefile	2014-02-10 12:56:11.758719005 +0100
+@@ -8,6 +8,8 @@ CFLAGS += -Werror
+ CFLAGS += -I.
+ CFLAGS += $(CFLAGS_libxenctrl)
+ 
++LDFLAGS_libxenctrl += $(call LDFLAGS_RPATH,../lib)
++
+ CLIENTS := xenstore-exists xenstore-list xenstore-read xenstore-rm xenstore-chmod
+ CLIENTS += xenstore-write xenstore-ls xenstore-watch
+ 

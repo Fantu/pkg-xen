@@ -1,0 +1,18 @@
+Description: Export flags from configure
+Author: Bastian Blank <waldi@debian.org>
+Origin: vendor
+Forwarded: not-needed
+Index: xen-4.4.0~rc3+20140210/config/Tools.mk.in
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/config/Tools.mk.in	2014-02-10 12:53:55.942055036 +0100
++++ xen-4.4.0~rc3+20140210/config/Tools.mk.in	2014-02-10 12:56:14.038730150 +0100
+@@ -26,6 +26,9 @@ FETCHER             := @FETCHER@
+ SEABIOS_PATH        := @seabios_path@
+ OVMF_PATH           := @ovmf_path@
+ 
++CFLAGS              += @CFLAGS@
++CPPFLAGS            += @CPPFLAGS@
++
+ # Extra folder for libs/includes
+ PREPEND_INCLUDES    := @PREPEND_INCLUDES@
+ PREPEND_LIB         := @PREPEND_LIB@

@@ -1,0 +1,13 @@
+Index: xen-4.4.0~rc3+20140210/tools/Rules.mk
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/Rules.mk	2014-02-10 12:53:57.902064617 +0100
++++ xen-4.4.0~rc3+20140210/tools/Rules.mk	2014-02-10 12:55:58.834655821 +0100
+@@ -9,6 +9,8 @@ include $(XEN_ROOT)/Config.mk
+ export _INSTALL := $(INSTALL)
+ INSTALL = $(XEN_ROOT)/tools/cross-install
+ 
++LDFLAGS_RPATH = -Wl,-rpath,'$${ORIGIN}$(if $(1),/$(1))'
++
+ XEN_INCLUDE        = $(XEN_ROOT)/tools/include
+ XEN_LIBXC          = $(XEN_ROOT)/tools/libxc
+ XEN_XENLIGHT       = $(XEN_ROOT)/tools/libxl

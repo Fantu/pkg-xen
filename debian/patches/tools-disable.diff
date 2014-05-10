@@ -1,0 +1,45 @@
+Index: xen-4.4.0~rc3+20140210/tools/Makefile
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/Makefile	2014-02-10 12:53:55.702053860 +0100
++++ xen-4.4.0~rc3+20140210/tools/Makefile	2014-02-10 12:56:16.154740499 +0100
+@@ -16,11 +16,6 @@ SUBDIRS-y += console
+ SUBDIRS-y += xenmon
+ SUBDIRS-y += xenstat
+ SUBDIRS-$(CONFIG_Linux) += memshr 
+-ifeq ($(CONFIG_X86)$(CONFIG_Linux),yy)
+-SUBDIRS-$(CONFIG_BLKTAP1) += blktap
+-endif
+-SUBDIRS-$(CONFIG_Linux) += blktap2
+-SUBDIRS-$(CONFIG_NetBSD) += blktap2
+ SUBDIRS-$(CONFIG_NetBSD) += xenbackendd
+ SUBDIRS-y += libfsimage
+ SUBDIRS-$(LIBXENAPI_BINDINGS) += libxen
+@@ -28,9 +23,12 @@ SUBDIRS-$(CONFIG_Linux) += libvchan
+ 
+ # do not recurse in to a dir we are about to delete
+ ifneq "$(MAKECMDGOALS)" "distclean"
++CONFIG_QEMU = $(CURDIR)/../qemu
++ifneq ($(wildcard $(CONFIG_QEMU)),)
+ SUBDIRS-$(CONFIG_QEMU_TRAD) += qemu-xen-traditional-dir
+ SUBDIRS-$(CONFIG_QEMU_XEN) += qemu-xen-dir
+ endif
++endif
+ 
+ SUBDIRS-y += xenpmd
+ SUBDIRS-y += libxl
+Index: xen-4.4.0~rc3+20140210/tools/Rules.mk
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/Rules.mk	2014-02-10 12:55:58.834655821 +0100
++++ xen-4.4.0~rc3+20140210/tools/Rules.mk	2014-02-10 12:56:16.154740499 +0100
+@@ -41,11 +41,7 @@ CFLAGS_libxenvchan = -I$(XEN_LIBVCHAN)
+ LDLIBS_libxenvchan = $(SHLIB_libxenctrl) $(SHLIB_libxenstore) -L$(XEN_LIBVCHAN) -lxenvchan
+ SHLIB_libxenvchan  = -Wl,-rpath-link=$(XEN_LIBVCHAN)
+ 
+-ifeq ($(CONFIG_Linux),y)
+-LIBXL_BLKTAP ?= y
+-else
+ LIBXL_BLKTAP ?= n
+-endif
+ 
+ ifeq ($(LIBXL_BLKTAP),y)
+ CFLAGS_libblktapctl = -I$(XEN_BLKTAP2)/control -I$(XEN_BLKTAP2)/include $(CFLAGS_xeninclude)

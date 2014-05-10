@@ -1,0 +1,24 @@
+Index: xen-4.4.0~rc3+20140210/tools/xenmon/Makefile
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/xenmon/Makefile	2014-02-10 12:56:08.110701169 +0100
++++ xen-4.4.0~rc3+20140210/tools/xenmon/Makefile	2014-02-10 12:56:20.234760447 +0100
+@@ -13,6 +13,10 @@
+ XEN_ROOT=$(CURDIR)/../..
+ include $(XEN_ROOT)/tools/Rules.mk
+ 
++DEFAULT_PYTHON_PATH := $(shell $(XEN_ROOT)/tools/python/get-path)
++PYTHON_PATH ?= $(DEFAULT_PYTHON_PATH)
++INSTALL_PYTHON_PROG = $(XEN_ROOT)/tools/python/install-wrap "$(PYTHON_PATH)" $(INSTALL_PROG)
++
+ CFLAGS  += -Werror
+ CFLAGS  += $(CFLAGS_libxenctrl)
+ LDLIBS  += $(LDLIBS_libxenctrl)
+@@ -31,7 +35,7 @@ install: build
+ 	$(INSTALL_DIR) $(DESTDIR)$(PRIVATE_BINDIR)
+ 	$(INSTALL_PROG) xenbaked $(DESTDIR)$(PRIVATE_BINDIR)/xenbaked
+ 	$(INSTALL_PROG) xentrace_setmask  $(DESTDIR)$(PRIVATE_BINDIR)/xentrace_setmask
+-	$(INSTALL_PROG) xenmon.py  $(DESTDIR)$(PRIVATE_BINDIR)/xenmon.py
++	$(INSTALL_PYTHON_PROG) xenmon.py  $(DESTDIR)$(PRIVATE_BINDIR)/xenmon
+ 	$(INSTALL_DIR) $(DESTDIR)$(DOCDIR)
+ 	$(INSTALL_DATA) README $(DESTDIR)$(DOCDIR)/README.xenmon
+ 

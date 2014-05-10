@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    configure)
+        if [ -x "/etc/init.d/xen" ]; then
+	    invoke-rc.d xen start || exit $?
+        fi
+	/usr/lib/xen-4.4/bin/xen-migrate-xend-managed-domains
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+	echo "postinst called with unknown argument \`$1'" >&2
+	exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

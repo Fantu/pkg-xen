@@ -1,0 +1,27 @@
+Index: xen-4.4.0~rc3+20140210/tools/xenstat/xentop/Makefile
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/xenstat/xentop/Makefile	2014-02-10 12:53:56.430057415 +0100
++++ xen-4.4.0~rc3+20140210/tools/xenstat/xentop/Makefile	2014-02-10 12:56:09.582708372 +0100
+@@ -30,8 +30,8 @@ all: xentop
+ 
+ .PHONY: install
+ install: xentop xentop.1
+-	$(INSTALL_DIR) $(DESTDIR)$(SBINDIR)
+-	$(INSTALL_PROG) xentop $(DESTDIR)$(SBINDIR)/xentop
++	$(INSTALL_DIR) $(DESTDIR)$(PRIVATE_BINDIR)
++	$(INSTALL_PROG) xentop $(DESTDIR)$(PRIVATE_BINDIR)/xentop
+ 	$(INSTALL_DIR) $(DESTDIR)$(MAN1DIR)
+ 	$(INSTALL_DATA) xentop.1 $(DESTDIR)$(MAN1DIR)/xentop.1
+ 
+Index: xen-4.4.0~rc3+20140210/tools/xenstat/libxenstat/Makefile
+===================================================================
+--- xen-4.4.0~rc3+20140210.orig/tools/xenstat/libxenstat/Makefile	2014-02-10 12:56:02.394673225 +0100
++++ xen-4.4.0~rc3+20140210/tools/xenstat/libxenstat/Makefile	2014-02-10 12:56:09.582708372 +0100
+@@ -51,6 +51,7 @@ $(SHLIB): $(OBJECTS-y)
+ 
+ .PHONY: install
+ install: all
++	$(INSTALL_DIR) $(DESTDIR)$(LIBDIR) $(DESTDIR)$(PRIVATE_LIBDIR)
+ 	$(INSTALL_DATA) src/xenstat.h $(DESTDIR)$(INCLUDEDIR)
+ 	$(INSTALL_DATA) $(LIB) $(DESTDIR)$(LIBDIR)/libxenstat.a
+ 	$(INSTALL_PROG) src/libxenstat.so $(DESTDIR)$(PRIVATE_LIBDIR)
