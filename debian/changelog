@@ -4,11 +4,15 @@ xen (4.4.0-0ubuntu5.1) UNRELEASED; urgency=low
   * Build with distro's seabios with xen configure instead patch.
   * Use seabios 256k build instead the 128k one, because in the 128k the
     xen support will be disabled in future.
+  * Use distro's upstream qemu with xen configure instead patches.
   * Removed patches no more needed:
     - debian/patches/tools-firmware-seabios-packaged.diff
+    - debian/patches/ubuntu-qemu-disable-qemu-upstream.diff
+    - debian/patches/ubuntu-qemu-upstream-location.patch
   * Refreshed patches:
     - debian/patches/config-etherboot.diff
     - debian/patches/tools-firmware-etherboot-packaged.diff
+    - debian/patches/ubuntu-tools-armhf-without-ocaml.patch
 
  -- Fabio Fantoni <fabio.fantoni@m2r.biz>  Sun, 11 May 2014 13:26:20 +0200
 

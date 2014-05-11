@@ -12,11 +12,9 @@ but those won't show up in the patch.
 
 Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
 
-Index: xen-4.4.0~rc3+20140210/tools/Makefile
-===================================================================
---- xen-4.4.0~rc3+20140210.orig/tools/Makefile	2014-02-10 12:56:26.946793259 +0100
-+++ xen-4.4.0~rc3+20140210/tools/Makefile	2014-02-10 12:56:28.546801076 +0100
-@@ -43,8 +43,10 @@ SUBDIRS-$(CONFIG_TESTS) += tests
+--- a/tools/Makefile
++++ b/tools/Makefile
+@@ -42,8 +42,10 @@
  ifeq ($(XEN_COMPILE_ARCH),$(XEN_TARGET_ARCH))
  SUBDIRS-y += python
  SUBDIRS-y += pygrub

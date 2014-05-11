@@ -69,8 +69,6 @@ ubuntu-tools-firmware-etherboot-kvm-ipxe.diff
 #
 qemu-prefix.diff
 qemu-disable-blktap.diff
-ubuntu-qemu-disable-qemu-upstream.diff
-ubuntu-qemu-upstream-location.patch
 
 #
 # Disable udev rules using the "socket:" feature unsupported in the

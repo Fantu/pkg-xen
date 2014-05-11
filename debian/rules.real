@@ -42,7 +42,9 @@ $(STAMPS_DIR)/setup-docs:
 	cd $(DIR)/docs; ./configure --enable-xend --prefix=/usr
 	cd $(DIR)/tools; \
 		WGET=/bin/false \
-		./configure --enable-xend --prefix=/usr --with-system-seabios=/usr/share/seabios/bios-256k.bin
+		./configure --enable-xend --prefix=/usr \
+			--with-system-seabios=/usr/share/seabios/bios-256k.bin \
+			--with-system-qemu=/usr/bin/qemu-system-i386
 	@$(stamp)
 
 $(STAMPS_DIR)/setup-hypervisor_$(ARCH)_$(FLAVOUR): SOURCE_FILES = $(filter-out debian, $(wildcard *))
@@ -71,7 +73,8 @@ $(STAMPS_DIR)/setup-utils_$(ARCH):
 			--infodir=$${prefix}/share/info \
 			--sysconfdir=/etc \
 			--localstatedir=/var \
-			--with-system-seabios=/usr/share/seabios/bios-256k.bin
+			--with-system-seabios=/usr/share/seabios/bios-256k.bin \
+			--with-system-qemu=/usr/bin/qemu-system-i386
 	@$(stamp)
 
 $(STAMPS_DIR)/build-docs: DIR=$(BUILD_DIR)/build-docs
