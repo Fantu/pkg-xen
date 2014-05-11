@@ -1,8 +1,6 @@
-Index: xen-4.4.0~rc3+20140210/Config.mk
-===================================================================
---- xen-4.4.0~rc3+20140210.orig/Config.mk	2014-02-10 12:53:58.490067486 +0100
-+++ xen-4.4.0~rc3+20140210/Config.mk	2014-02-10 12:55:53.522629857 +0100
-@@ -239,7 +239,7 @@ SEABIOS_UPSTREAM_TAG ?= rel-1.7.3.1
+--- a/Config.mk
++++ b/Config.mk
+@@ -241,7 +241,7 @@
  # Fri Aug 2 14:12:09 2013 -0400
  # Fix bug in CBFS file walking with compressed files.
  

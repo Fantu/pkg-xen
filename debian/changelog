@@ -1,3 +1,17 @@
+xen (4.4.0-0ubuntu5.1) UNRELEASED; urgency=low
+
+  * Non-maintainer upload
+  * Build with distro's seabios with xen configure instead patch.
+  * Use seabios 256k build instead the 128k one, because in the 128k the
+    xen support will be disabled in future.
+  * Removed patches no more needed:
+    - debian/patches/tools-firmware-seabios-packaged.diff
+  * Refreshed patches:
+    - debian/patches/config-etherboot.diff
+    - debian/patches/tools-firmware-etherboot-packaged.diff
+
+ -- Fabio Fantoni <fabio.fantoni@m2r.biz>  Sun, 11 May 2014 13:26:20 +0200
+
 xen (4.4.0-0ubuntu5) trusty; urgency=low
 
   * Minimal changes to make arm64 build. It produces packages, whatever

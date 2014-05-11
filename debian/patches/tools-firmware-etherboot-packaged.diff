@@ -1,8 +1,6 @@
-Index: xen-4.4.0~rc3+20140210/tools/firmware/Makefile
-===================================================================
---- xen-4.4.0~rc3+20140210.orig/tools/firmware/Makefile	2014-02-10 12:53:55.378052281 +0100
-+++ xen-4.4.0~rc3+20140210/tools/firmware/Makefile	2014-02-10 12:56:18.042749731 +0100
-@@ -14,7 +14,6 @@ SUBDIRS-$(CONFIG_SEABIOS) += seabios-dir
+--- a/tools/firmware/Makefile
++++ b/tools/firmware/Makefile
+@@ -14,7 +14,6 @@
  endif
  SUBDIRS-$(CONFIG_ROMBIOS) += rombios
  SUBDIRS-$(CONFIG_ROMBIOS) += vgabios
@@ -10,7 +8,7 @@ Index: xen-4.4.0~rc3+20140210/tools/firmware/Makefile
  SUBDIRS-y += hvmloader
  
  ovmf-dir:
-@@ -50,9 +49,6 @@ clean: subdirs-clean
+@@ -50,9 +49,6 @@
  .PHONY: distclean
  distclean: subdirs-distclean
  
@@ -20,11 +18,9 @@ Index: xen-4.4.0~rc3+20140210/tools/firmware/Makefile
  subdir-distclean-ovmf: .phony
  	rm -rf ovmf-dir ovmf-dir-remote
  
-Index: xen-4.4.0~rc3+20140210/tools/firmware/hvmloader/Makefile
-===================================================================
---- xen-4.4.0~rc3+20140210.orig/tools/firmware/hvmloader/Makefile	2014-02-10 12:53:55.402052398 +0100
-+++ xen-4.4.0~rc3+20140210/tools/firmware/hvmloader/Makefile	2014-02-10 12:56:18.042749731 +0100
-@@ -48,7 +48,7 @@ CIRRUSVGA_ROM := ../vgabios/VGABIOS-lgpl
+--- a/tools/firmware/hvmloader/Makefile
++++ b/tools/firmware/hvmloader/Makefile
+@@ -48,7 +48,7 @@
  else
  CIRRUSVGA_ROM := ../vgabios/VGABIOS-lgpl-latest.cirrus.bin
  endif

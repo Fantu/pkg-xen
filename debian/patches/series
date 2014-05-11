@@ -39,7 +39,6 @@ tools-disable.diff
 tools-examples-xend-disable-network.diff
 tools-examples-xend-disable-relocation.diff
 tools-firmware-etherboot-packaged.diff
-tools-firmware-seabios-packaged.diff
 
 tools-pygrub-remove-static-solaris-support.patch
 
