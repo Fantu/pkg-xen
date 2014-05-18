@@ -62,13 +62,14 @@ xen (4.4.0-0.1) UNRELEASED; urgency=low
     as there is no xen-default anymore.
   * Fix up some more stale 4.3 references in xen-utils-4.4 debian
     packaging files.
+  * Removed control.md5sum automatically generated on the packages creation.
   * Removed patches no more needed:
     - debian/patches/tools-firmware-seabios-packaged.diff
     - debian/patches/tools-libxl-nopidfile.diff
     - debian/patches/tools-tests-hardening-fallout.patch
   * Refreshed many other debian/patches
 
- -- Fabio Fantoni <fabio.fantoni@m2r.biz>  Fri, Sun, 18 May 2014 16:54:16 +0200
+ -- Fabio Fantoni <fabio.fantoni@m2r.biz>  Sun, 18 May 2014 16:54:16 +0200
 
 xen (4.3.0-3) unstable; urgency=low
 
