@@ -1,6 +1,6 @@
 --- a/tools/xenstore/xenstore_client.c
 +++ b/tools/xenstore/xenstore_client.c
-@@ -629,7 +629,7 @@
+@@ -632,7 +632,7 @@
  	    max_width = ws.ws_col - 2;
      }
  
@@ -11,7 +11,7 @@
  again:
 --- a/tools/xenstore/xs.c
 +++ b/tools/xenstore/xs.c
-@@ -278,17 +278,19 @@
+@@ -282,17 +282,19 @@
  
  struct xs_handle *xs_domain_open(void)
  {

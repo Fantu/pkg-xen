@@ -1,14 +1,14 @@
 --- a/tools/firmware/Makefile
 +++ b/tools/firmware/Makefile
-@@ -10,7 +10,6 @@
- SUBDIRS-$(CONFIG_SEABIOS) += seabios-dir
+@@ -14,7 +14,6 @@
+ endif
  SUBDIRS-$(CONFIG_ROMBIOS) += rombios
  SUBDIRS-$(CONFIG_ROMBIOS) += vgabios
 -SUBDIRS-$(CONFIG_ROMBIOS) += etherboot
  SUBDIRS-y += hvmloader
  
- ovmf:
-@@ -46,9 +45,6 @@
+ ovmf-dir:
+@@ -50,9 +49,6 @@
  .PHONY: distclean
  distclean: subdirs-distclean
  
@@ -16,7 +16,7 @@
 -	$(MAKE) -C etherboot distclean
 -
  subdir-distclean-ovmf: .phony
- 	rm -rf ovmf ovmf-remote
+ 	rm -rf ovmf-dir ovmf-dir-remote
  
 --- a/tools/firmware/hvmloader/Makefile
 +++ b/tools/firmware/hvmloader/Makefile

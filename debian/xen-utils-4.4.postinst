@@ -4,10 +4,10 @@ set -e
 
 case "$1" in
     configure)
-        update-alternatives --remove xen-default /usr/lib/xen-4.3
         if [ -x "/etc/init.d/xen" ]; then
 	    invoke-rc.d xen start || exit $?
         fi
+	/usr/lib/xen-4.4/bin/xen-migrate-xend-managed-domains
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

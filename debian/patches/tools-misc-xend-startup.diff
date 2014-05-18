@@ -1,5 +1,5 @@
---- a/tools/misc/xend
-+++ b/tools/misc/xend
+--- a/tools/python/xen/xend/xend
++++ b/tools/python/xen/xend/xend
 @@ -71,13 +71,6 @@
          hline()
          raise CheckError("invalid user")

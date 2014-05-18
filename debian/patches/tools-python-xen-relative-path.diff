@@ -105,7 +105,7 @@
 -        cmd = map(str, [xen.util.auxbin.pathTo(XC_RESTORE),
 +        cmd = map(str, [xen.util.auxbin.path_bin(XC_RESTORE),
                          fd, dominfo.getDomid(),
-                         store_port, console_port, int(is_hvm), pae, apic, superpages])
+                         store_port, console_port, int(is_hvm), pae, apic, superpages, 1])
          log.debug("[xc_restore]: %s", string.join(cmd))
 --- a/tools/python/xen/xend/XendConfig.py
 +++ b/tools/python/xen/xend/XendConfig.py
@@ -152,7 +152,7 @@
                      # as well that is not really exposed to Xen API
 --- a/tools/python/xen/xend/XendDomainInfo.py
 +++ b/tools/python/xen/xend/XendDomainInfo.py
-@@ -3239,7 +3239,7 @@
+@@ -3244,7 +3244,7 @@
          else:
              # Boot using bootloader
              if not blexec or blexec == 'pygrub':

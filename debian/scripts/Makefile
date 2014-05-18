@@ -28,6 +28,7 @@ PRIVATE_SCRIPTS = \
 	xen-init-list \
 	xen-toolstack \
 	xen-version \
+	xend-domain-config-path-strip \
 	$(GLOBAL_TOOLSTACK_WRAPPER) \
 	$(GLOBAL_UTILS_WRAPPER)
 

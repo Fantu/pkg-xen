@@ -1,4 +1,4 @@
-22a892a035f25617633bbf1244a2110c  debian/changelog
+ac0eaaff8a41be34286540b920471a29  debian/changelog
 c379f09bde66561f34d361dd9f89e345  debian/bin/gencontrol.py
 a4fad0ec66d977759a362165bf8aa31d  debian/templates/control.hypervisor.in
 e9166b8a1e6e9ac9e2fba6050a59fbdb  debian/templates/control.main.in
@@ -12,4 +12,4 @@ dcabf82578122540e0534f72750698d5  debian/templates/xen-utils.lintian-overrides.i
 b6acd21c3924e6ec6f9c547afbbc7d9e  debian/templates/xen-utils.prerm.in
 2f0cc6973a228e4002e5b89f756e3d58  debian/arch/defines
 7eec83f6c765a660ebaeb80dc4b433ad  debian/arch/amd64/defines
-bda767ffd62b57de88b50731794f1374  debian/arch/i386/defines
+ea4d950fe2490d8a019d069852c8ffd3  debian/arch/i386/defines

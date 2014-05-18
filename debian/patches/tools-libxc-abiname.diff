@@ -4,13 +4,13 @@
  XEN_ROOT = $(CURDIR)/../..
  include $(XEN_ROOT)/tools/Rules.mk
  
--MAJOR    = 4.3
+-MAJOR    = 4.4
 -MINOR    = 0
 -
  CTRL_SRCS-y       :=
  CTRL_SRCS-y       += xc_core.c
  CTRL_SRCS-$(CONFIG_X86) += xc_core_x86.c
-@@ -108,12 +105,12 @@
+@@ -110,12 +107,12 @@
  
  LIB := libxenctrl.a
  ifneq ($(stubdom),y)
@@ -25,7 +25,7 @@
  endif
  
  ifneq ($(stubdom),y)
-@@ -134,15 +131,13 @@
+@@ -136,15 +133,13 @@
  install: build
  	$(INSTALL_DIR) $(DESTDIR)$(LIBDIR)
  	$(INSTALL_DIR) $(DESTDIR)$(INCLUDEDIR)
@@ -45,7 +45,7 @@
  	$(INSTALL_DATA) xenguest.h $(DESTDIR)$(INCLUDEDIR)
  
  .PHONY: TAGS
-@@ -171,22 +166,18 @@
+@@ -173,22 +168,18 @@
  libxenctrl.a: $(CTRL_LIB_OBJS)
  	$(AR) rc $@ $^
  
@@ -72,7 +72,7 @@
  	ln -sf $< $@
  
  ifeq ($(CONFIG_MiniOS),y)
-@@ -198,9 +189,9 @@
+@@ -200,9 +191,9 @@
  xc_dom_bzimageloader.o: CFLAGS += $(call zlib-options,D)
  xc_dom_bzimageloader.opic: CFLAGS += $(call zlib-options,D)
  

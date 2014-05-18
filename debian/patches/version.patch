@@ -7,8 +7,8 @@
 @DPATCH@
 --- a/xen/Makefile
 +++ b/xen/Makefile
-@@ -116,20 +116,19 @@
- 	@rm -f $@1 $@2
+@@ -122,20 +122,19 @@
+ 	@mv -f $@.tmp $@
  
  # compile.h contains dynamic build info. Rebuilt on every 'make' invocation.
 -include/xen/compile.h: include/xen/compile.h.in .banner
@@ -28,14 +28,14 @@
 +	    -e 's/@@system_maintainer_local@@/$(shell cd ../../../..; dpkg-parsechangelog | sed -ne 's,^Maintainer: .[^<]*<\([^@>]*\)@.*>,\1,p')/g' \
 +	    -e 's/@@system_version@@/$(shell cd ../../../..; dpkg-parsechangelog | awk '/^Version:/ {print $$2}')/g' \
  	    < include/xen/compile.h.in > $@.new
--	@grep \" .banner >> $@.new
--	@grep -v \" .banner
+-	@cat .banner
+-	@$(PYTHON) tools/fig-to-oct.py < .banner >> $@.new
  	@mv -f $@.new $@
  
  include/asm-$(TARGET_ARCH)/asm-offsets.h: arch/$(TARGET_ARCH)/asm-offsets.s
 --- a/xen/common/kernel.c
 +++ b/xen/common/kernel.c
-@@ -226,8 +226,8 @@
+@@ -243,8 +243,8 @@
      {
          struct xen_compile_info info;
          safe_strcpy(info.compiler,       xen_compiler());
@@ -89,7 +89,7 @@
 -}
 --- a/xen/drivers/char/console.c
 +++ b/xen/drivers/char/console.c
-@@ -608,14 +608,11 @@
+@@ -667,14 +667,11 @@
      serial_set_rx_handler(sercon_handle, serial_rx);
  
      /* HELLO WORLD --- start-of-day banner text. */

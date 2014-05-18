@@ -4,7 +4,7 @@
  XEN_ROOT = $(CURDIR)/../..
  include $(XEN_ROOT)/tools/Rules.mk
  
--MAJOR = 4.3
+-MAJOR = 4.4
 -MINOR = 0
 -
 -XLUMAJOR = 4.3
@@ -13,7 +13,7 @@
  CFLAGS += -Werror -Wno-format-zero-length -Wmissing-declarations \
  	-Wno-declaration-after-statement -Wformat-nonliteral
  CFLAGS += -I. -fPIC
-@@ -164,26 +158,20 @@
+@@ -185,29 +179,23 @@
  	$(call move-if-changed,__libxl_type$*_json.h,_libxl_type$*_json.h)
  	$(call move-if-changed,__libxl_type$*.c,_libxl_type$*.c)
  
@@ -28,6 +28,10 @@
 -	$(CC) $(LDFLAGS) -Wl,$(SONAME_LDFLAG) -Wl,libxenlight.so.$(MAJOR) $(SHLIB_LDFLAGS) -o $@ $^ $(LIBXL_LIBS) $(APPEND_LDFLAGS)
 +libxenlight-$(XEN_VERSION).so: $(LIBXL_OBJS)
 +	$(CC) $(LDFLAGS) -Wl,$(SONAME_LDFLAG),$@ $(SHLIB_LDFLAGS) -o $@ $^ $(LIBXL_LIBS) $(APPEND_LDFLAGS)
+ 
+ libxenlight_test.so: $(LIBXL_OBJS) $(LIBXL_TEST_OBJS)
+-	$(CC) $(LDFLAGS) -Wl,$(SONAME_LDFLAG) -Wl,libxenlight.so.$(MAJOR) $(SHLIB_LDFLAGS) -o $@ $^ $(LIBXL_LIBS) $(APPEND_LDFLAGS)
++	$(CC) $(LDFLAGS) -Wl,$(SONAME_LDFLAG) -Wl,libxenlight-$(XEN_VERSION).so $(SHLIB_LDFLAGS) -o $@ $^ $(LIBXL_LIBS) $(APPEND_LDFLAGS)
  
  libxenlight.a: $(LIBXL_OBJS)
  	$(AR) rcs libxenlight.a $^
@@ -46,7 +50,7 @@
  
  libxlutil.a: $(LIBXLU_OBJS)
  	$(AR) rcs libxlutil.a $^
-@@ -207,13 +195,11 @@
+@@ -234,13 +222,11 @@
  	$(INSTALL_DIR) $(DESTDIR)$(PRIVATE_BINDIR)
  	$(INSTALL_PROG) xl $(DESTDIR)$(SBINDIR)
  	$(INSTALL_PROG) libxl-save-helper $(DESTDIR)$(PRIVATE_BINDIR)

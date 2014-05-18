@@ -17,8 +17,10 @@ binary-arch-arch: install-libxen-dev_$(ARCH)
 binary-arch-arch: install-libxenstore_$(ARCH)
 binary-arch-arch: install-utils_$(ARCH)
 binary-arch-arch: install-xenstore-utils_$(ARCH)
+ifeq (,$(findstring $(ARCH),armhf arm64))
 binary-arch-arch: install-lib-ocaml-dev_$(ARCH)
 binary-arch-arch: install-lib-ocaml_$(ARCH)
+endif
 binary-arch-flavour: install-hypervisor_$(ARCH)_$(FLAVOUR)
 
 binary-indep: install-utils-common
@@ -37,10 +39,12 @@ $(STAMPS_DIR)/setup-docs:
 	@rm -rf $(DIR)
 	mkdir -p $(DIR)
 	cp -al $(SOURCE_FILES) $(DIR)
-	cd $(DIR)/docs; ./configure --prefix=/usr
+	cd $(DIR)/docs; ./configure --enable-xend --prefix=/usr
 	cd $(DIR)/tools; \
 		WGET=/bin/false \
-		./configure --prefix=/usr
+		./configure --enable-xend --prefix=/usr \
+			--with-system-seabios=/usr/share/seabios/bios-256k.bin \
+			--with-system-qemu=/usr/bin/qemu-system-i386
 	@$(stamp)
 
 $(STAMPS_DIR)/setup-hypervisor_$(ARCH)_$(FLAVOUR): SOURCE_FILES = $(filter-out debian, $(wildcard *))
@@ -62,12 +66,15 @@ $(STAMPS_DIR)/setup-utils_$(ARCH):
 		CFLAGS="$(CFLAGS)" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 		WGET=/bin/false \
 		./configure \
+			--enable-xend \
 			--prefix=/usr \
 			--includedir=$${prefix}/include \
 			--mandir=$${prefix}/share/man \
 			--infodir=$${prefix}/share/info \
 			--sysconfdir=/etc \
-			--localstatedir=/var
+			--localstatedir=/var \
+			--with-system-seabios=/usr/share/seabios/bios-256k.bin \
+			--with-system-qemu=/usr/bin/qemu-system-i386
 	@$(stamp)
 
 $(STAMPS_DIR)/build-docs: DIR=$(BUILD_DIR)/build-docs
@@ -102,8 +109,10 @@ $(STAMPS_DIR)/install-utils_$(ARCH): $(STAMPS_DIR)/build-utils_$(ARCH)
 	@rm -rf $(INSTALL_DIR)
 	mkdir -p $(INSTALL_DIR)/$(OCAML_DLL_DIR)
 	+$(MAKE_CLEAN) -C $(DIR)/tools install DESTDIR=$(CURDIR)/$(INSTALL_DIR) $(CONFIG)
+ifeq (,$(findstring $(ARCH),armhf arm64))
 	# hvmloader
 	strip --remove-section=.comment --remove-section=.note $(INSTALL_DIR)/usr/lib/xen*/boot/*
+endif
 	touch $@
 
 $(STAMPS_DIR)/install-utils-common: DIR = $(BUILD_DIR)/build-docs
@@ -143,7 +152,14 @@ install-hypervisor_$(ARCH)_$(FLAVOUR): $(STAMPS_DIR)/build-hypervisor_$(ARCH)_$(
 	dh_testroot
 	dh_prep
 	dh_installdirs boot
+	dh_installdirs etc/default/grub.d
+	install -D -m644 debian/xen-hypervisor-$(VERSION).xen.cfg \
+		   debian/$(PACKAGE_NAME)/etc/default/grub.d/xen.cfg
+ifeq (,$(findstring $(ARCH),armhf arm64))
 	cp $(DIR)/xen/xen.gz debian/$(PACKAGE_NAME)/boot/xen-$(VERSION)-$(FLAVOUR).gz
+else
+	cp $(DIR)/xen/xen debian/$(PACKAGE_NAME)/boot/xen-$(VERSION)-$(FLAVOUR)
+endif
 	+$(MAKE_SELF) install-base
 
 install-libxen_$(ARCH): DIR = $(BUILD_DIR)/install-utils_$(ARCH)
@@ -173,7 +189,7 @@ install-libxen-dev_$(ARCH): $(STAMPS_DIR)/install-utils_$(ARCH)
 install-lib-ocaml_$(ARCH): DIR = $(BUILD_DIR)/install-utils_$(ARCH)
 install-lib-ocaml_$(ARCH): PACKAGE_NAME = libxen-ocaml
 install-lib-ocaml_$(ARCH): DH_OPTIONS = -p$(PACKAGE_NAME)
-install-lib-ocaml_$(ARCH): $(STAMPS_DIR)/install-utils_$(ARCH) install-libxen_$(ARCH)
+install-lib-ocaml_$(ARCH): $(STAMPS_DIR)/install-utils_$(ARCH)
 	dh_testdir
 	dh_testroot
 	dh_prep
@@ -219,7 +235,7 @@ install-utils_$(ARCH): DIR = $(BUILD_DIR)/install-utils_$(ARCH)
 install-utils_$(ARCH): PACKAGE_NAME = xen-utils-$(VERSION)
 install-utils_$(ARCH): PACKAGE_DIR = debian/$(PACKAGE_NAME)
 install-utils_$(ARCH): DH_OPTIONS = -p$(PACKAGE_NAME)
-install-utils_$(ARCH): $(STAMPS_DIR)/install-utils_$(ARCH) install-libxen_$(ARCH)
+install-utils_$(ARCH): $(STAMPS_DIR)/install-utils_$(ARCH) install-libxenstore_$(ARCH)
 	dh_testdir
 	dh_testroot
 	dh_prep
@@ -227,6 +243,12 @@ install-utils_$(ARCH): $(STAMPS_DIR)/install-utils_$(ARCH) install-libxen_$(ARCH
 	install -D -m644 debian/xen-utils.README.Debian $(PACKAGE_DIR)/usr/share/doc/$(PACKAGE_NAME)/README.Debian
 	install -D -m644 debian/xen-utils-$(VERSION).lintian-overrides $(PACKAGE_DIR)/usr/share/lintian/overrides/$(PACKAGE_NAME)
 	dh_install --sourcedir=$(DIR) usr/lib/xen-$(VERSION)
+	# Hack around usr/sbin
+	dh_install --sourcedir=$(DIR) usr/sbin/* /usr/lib/xen-$(VERSION)/bin/
+	install -m 755 debian/xen-sxp2xm \
+		$(PACKAGE_DIR)/usr/lib/xen-$(VERSION)/bin
+	install -m 755 debian/xen-migrate-xend-managed-domains \
+		$(PACKAGE_DIR)/usr/lib/xen-$(VERSION)/bin
 	( echo -n "misc:Built-Using="; dpkg-query -f='$${source:Package} (= $${source:Version}), ' -W ipxe-qemu seabios; echo ) >> debian/$(PACKAGE_NAME).substvars
 	dh_python2 -V$(shell pyversions -rv) /usr/lib/xen-$(VERSION)
 	dh_strip

@@ -1,3 +1,75 @@
+xen (4.4.0-0.1) UNRELEASED; urgency=low
+
+  * Non-maintainer upload.
+  * New upstream release. (closes: #737905, #730254, #741319)
+  * Build with distro's seabios with xen configure instead patch.
+  * Use seabios 256k build instead the 128k one, because in the 128k the
+    xen support will be disabled in future.
+  * Use distro's upstream qemu with xen configure. (closes: #733865)
+  * debian/rules.real: Force xend to be built.
+  * debian/rules.real: For utils_<arch> installation move binaries from
+    usr/sbin/ to usr/lib/xen-<version>/bin. Several that used to go into
+    the private bin directory moved to the public sbin directory.
+    Not ideal but quicker to do without side-effects.
+  * debian/rules.real: Hypervisor has no .gz type on armhf.
+  * debian/rules.real:
+    Add etc/default/grub.d and install xen.cfg into it. This adds a
+    place to set Xen grub arguments and makes booting into Xen the
+    default (with a warning message on running update-grub).
+  * debian/rules.real, debian/xen-utils-$(VERSION).postinst, xen-sxp2xm, 
+    and xen-migrate-xend-managed-domains:
+    Add migration scripts to the xen-utils-$(VERSION) package.
+  * First test for suitable toolstack in xendomains before using the list
+    command as that causes the xapi daemon to hang.
+    - debian/xen-utils-common.xendomains.init
+  * Add armhf to packages (except ocaml related) and create hypervisor
+    and system-meta package. Modify build environment to produce Arm packages.
+  * debian/control
+  * debian/rules.gen
+  * debian/rules.real
+  * debian/patches/ubuntu-tools-armhf-without-ocaml.patch
+    Ocaml source fail to build on Arm.
+  * Re-introduce xen-hypervisor-amd64 for i386 builds. Otherwise i386
+    would be rendered uninstallable.
+    * debian/arch/i386/defines
+    * debian/control
+  * Add packaging dependency on libxenstore to libxen (otherwise
+      libtool fails to find references for libxenlight).
+  * debian/rules.real
+    - Add migration helper that removes private paths from xend domain
+      configs.
+      * debian/scripts/Makefile
+      * debian/scripts/xend-domain-config-path-strip
+      * debian/xen-utils-common.postinst
+  * Fix for using ulong instead of unsigned long in gdbsx.
+      - debian/patches/toolchain.diff
+  * debian/control, debian/rules.gen: Manually update version from 4.3 to 4.4.
+  * debian/control: Add build dependency for libfdt-dev on armhf.
+  * debian/control: Only depend on qemu-system-x86 for i386 and amd64 builds.
+  * debian/tree/xen-utils-common/usr/share/xen-utils-common/default.xen:
+    Add comment about toolstack names and make xl the default.
+  * debian/xen-utils-common.xen.init: Write domid for dom0 into xenstore
+    (now required).
+  * debian/patches/tools-ocaml-disable-test.patch: This disables the ocaml
+    test build for now until linking issues are resolved.
+  * Add transitional packages for migrating xen-hypervisor-4.1-(i386|amd64)
+    and xen-hypervisor-4.3-amd64 to add the xen-system-amd64 meta-package
+    which is the preferred/recommeded way of installing Xen now.
+  * Minimal changes to make arm64 build. It produces packages, whatever
+    can be done with those is somebody elses problem.
+  * debian/*: Also rename several versioned packaging files.
+  * Remove update-alternatives for postinst and prerm of xen-utils-<version>
+    as there is no xen-default anymore.
+  * Fix up some more stale 4.3 references in xen-utils-4.4 debian
+    packaging files.
+  * Removed patches no more needed:
+    - debian/patches/tools-firmware-seabios-packaged.diff
+    - debian/patches/tools-libxl-nopidfile.diff
+    - debian/patches/tools-tests-hardening-fallout.patch
+  * Refreshed many other debian/patches
+
+ -- Fabio Fantoni <fabio.fantoni@m2r.biz>  Fri, Sun, 18 May 2014 16:54:16 +0200
+
 xen (4.3.0-3) unstable; urgency=low
 
   * Revive hypervisor on i386.

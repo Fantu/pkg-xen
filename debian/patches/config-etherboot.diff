@@ -1,8 +1,8 @@
 --- a/Config.mk
 +++ b/Config.mk
-@@ -217,7 +217,7 @@
- # Wed Jun 26 16:30:45 2013 +0100
- # xen: Don't perform SMP setup.
+@@ -241,7 +241,7 @@
+ # Fri Aug 2 14:12:09 2013 -0400
+ # Fix bug in CBFS file walking with compressed files.
  
 -ETHERBOOT_NICS ?= rtl8139 8086100e
 +ETHERBOOT_NICS ?= rtl8139 e1000_82540

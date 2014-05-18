@@ -31,17 +31,14 @@ tools-xentrace-prefix.diff
 tools-xentrace-rpath.diff
 
 tools-flags.diff
-tools-tests-hardening-fallout.patch
 
 tools-python-xen-relative-path.diff
 tools-misc-xend-startup.diff
-tools-libxl-nopidfile.diff
 
 tools-disable.diff
 tools-examples-xend-disable-network.diff
 tools-examples-xend-disable-relocation.diff
 tools-firmware-etherboot-packaged.diff
-tools-firmware-seabios-packaged.diff
 
 tools-pygrub-remove-static-solaris-support.patch
 
@@ -54,3 +51,26 @@ tools-python-shebang.diff
 
 tools-ocaml-fix-build.diff
 tools-xenstore-compatibility.diff
+# FIXME
+tools-ocaml-disable-test.patch
+
+#
+# Dropped in debian but ulong usage in gdbsx would still break the build.
+#
+toolchain.diff
+
+#
+# Disable udev rules using the "socket:" feature unsupported in the
+# systemd version of udev.
+#
+ubuntu-tools-hotplug-disable-xend-rules.patch
+
+#
+# Enable Arm builds
+#
+ubuntu-tools-armhf-without-ocaml.patch
+
+#
+# Security fixes not in Debian, yet
+#
+ubuntu-arm64-enablement.patch

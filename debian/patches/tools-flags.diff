@@ -4,9 +4,9 @@ Origin: vendor
 Forwarded: not-needed
 --- a/config/Tools.mk.in
 +++ b/config/Tools.mk.in
-@@ -24,6 +24,9 @@
- IASL                := @IASL@
- FETCHER             := @FETCHER@
+@@ -26,6 +26,9 @@
+ SEABIOS_PATH        := @seabios_path@
+ OVMF_PATH           := @ovmf_path@
  
 +CFLAGS              += @CFLAGS@
 +CPPFLAGS            += @CPPFLAGS@
