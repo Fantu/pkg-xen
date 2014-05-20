@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Xen Team <pkg-xen-devel@lists.alioth.debian.org>
 Uploaders: Guido Trotter <ultrotter@debian.org>, Bastian Blank <waldi@debian.org>
 Standards-Version: 3.9.4
-Build-Depends: debhelper (>> 7), dpkg-dev (>= 1.16.0~), lsb-release, python-dev, bcc, gcc-multilib [!arm64], e2fslibs-dev, iasl, ipxe-qemu, seabios, libaio-dev, libglib2.0-dev, libgnutls-dev, liblzma-dev, libncurses5-dev, libpci-dev, libyajl-dev, libssl-dev, pkg-config, uuid-dev, zlib1g-dev, ocaml-nox, dh-ocaml, ocaml-findlib, libfdt-dev [armhf arm64]
+Build-Depends: debhelper (>> 7), dpkg-dev (>= 1.16.0~), lsb-release, python-dev, bcc, gcc-multilib [!arm64], e2fslibs-dev, iasl, ipxe-qemu, seabios (>= 1.7.2-4), libaio-dev, libglib2.0-dev, libgnutls-dev, liblzma-dev, libncurses5-dev, libpci-dev, libyajl-dev, libssl-dev, pkg-config, uuid-dev, zlib1g-dev, ocaml-nox, dh-ocaml, ocaml-findlib, libfdt-dev [armhf arm64]
 XS-Python-Version: current
 
 Package: libxen-4.4
@@ -66,7 +66,7 @@ Package: xen-utils-4.4
 Architecture: amd64 i386 armhf arm64
 Provides: xen-utils
 Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, xen-utils-common (>= ${source:Version})
-Recommends: bridge-utils, libc6-xen [i386], xen-hypervisor-4.4, qemu-system-x86 [i386 amd64]
+Recommends: bridge-utils, libc6-xen [i386], xen-hypervisor-4.4, qemu-system-x86 (>= 1.7.0) [i386 amd64]
 Description: XEN administrative tools
  The userspace tools to manage a system virtualized through the XEN virtual
  machine monitor.
