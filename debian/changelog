@@ -1,3 +1,10 @@
+xen (4.4.0-0.1~bpo70+1) UNRELEASED; urgency=low
+
+  * Rebuild for wheezy-backports.
+  * rules.defs: set wheezy kernel version
+
+ -- Fabio Fantoni <fabio.fantoni@m2r.biz>  Tue, 20 May 2014 14:05:01 +0200
+
 xen (4.4.0-0.1) UNRELEASED; urgency=low
 
   * Non-maintainer upload.
