@@ -63,6 +63,10 @@ xen (4.4.0-0.1) UNRELEASED; urgency=low
   * Fix up some more stale 4.3 references in xen-utils-4.4 debian
     packaging files.
   * Removed control.md5sum automatically generated on the packages creation.
+  * debian/xen-utils-common.xendomains.default: Updated, was left without
+    upstream changes for some years.
+  * debian/xen-utils-common.xendomains.init: Updated with upstream maintaning
+    LSB header changes and toolstack choice.
   * Removed patches no more needed:
     - debian/patches/tools-firmware-seabios-packaged.diff
     - debian/patches/tools-libxl-nopidfile.diff
