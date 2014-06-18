@@ -40,6 +40,7 @@ if [ $? -ne 0 ]; then
 fi
 if [ "$(basename "$TOOLSTACK")" != xm ] && [ "$(basename "$TOOLSTACK")" != xl ]; then
 	exit 0
+fi
 
 CMD=${SBINDIR}/${TOOLSTACK}
 HEADCOMP="LinuxGuestRecord"
