@@ -1,0 +1,104 @@
+From 337311b0b352abdf145a0da19b44f2e5da6ec43c Mon Sep 17 00:00:00 2001
+Message-Id: <337311b0b352abdf145a0da19b44f2e5da6ec43c.1408524798.git.fabio.fantoni@m2r.biz>
+In-Reply-To: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+References: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+From: Fabio Fantoni <fabio.fantoni@m2r.biz>
+Date: Wed, 14 May 2014 16:06:35 +0200
+Subject: [PATCH 9/9] libxl: Spice streaming video setting support for upstream
+ qemu
+
+Usage:
+spice_streaming_video=[filter|all|off]
+
+Specifies what streaming video setting is to be used by spice (if given),
+otherwise the qemu default will be used.
+
+Signed-off-by: Fabio Fantoni <fabio.fantoni@m2r.biz>
+---
+ docs/man/xl.cfg.pod.5       |  5 +++++
+ tools/libxl/libxl.h         | 11 +++++++++++
+ tools/libxl/libxl_dm.c      |  3 +++
+ tools/libxl/libxl_types.idl |  1 +
+ tools/libxl/xl_cmdimpl.c    |  2 ++
+ 5 files changed, 22 insertions(+)
+
+diff --git a/docs/man/xl.cfg.pod.5 b/docs/man/xl.cfg.pod.5
+index 10e9afb..45e3af8 100644
+--- a/docs/man/xl.cfg.pod.5
++++ b/docs/man/xl.cfg.pod.5
+@@ -1368,6 +1368,11 @@ This feature is actually supported only by hvm domUs.
+ Specifies what image compression is to be used by spice (if given), otherwise
+ the qemu default will be used.
+ 
++=item B<spice_streaming_video=[filter|all|off]>
++
++Specifies what streaming video setting is to be used by spice (if given),
++otherwise the qemu default will be used.
++
+ =back
+ 
+ =head2 Keymaps
+diff --git a/tools/libxl/libxl.h b/tools/libxl/libxl.h
+index 82d6e03..7b62835 100644
+--- a/tools/libxl/libxl.h
++++ b/tools/libxl/libxl.h
+@@ -411,6 +411,17 @@
+ #define LIBXL_HAVE_SPICE_IMAGECOMPRESSION 1
+ 
+ /*
++ * LIBXL_HAVE_SPICE_STREAMINGVIDEO
++ *
++ * If defined, then the libxl_spice_info structure will contain a string type
++ * field: streaming_video. This value defines what Spice streaming video setting
++ * is used.
++ *
++ * If this is not defined, the Spice streaming video setting support is ignored.
++ */
++#define LIBXL_HAVE_SPICE_STREAMINGVIDEO 1
++
++/*
+  * LIBXL_HAVE_DOMAIN_CREATE_RESTORE_PARAMS 1
+  *
+  * If this is defined, libxl_domain_create_restore()'s API has changed to
+diff --git a/tools/libxl/libxl_dm.c b/tools/libxl/libxl_dm.c
+index 8037208..c7f78fc 100644
+--- a/tools/libxl/libxl_dm.c
++++ b/tools/libxl/libxl_dm.c
+@@ -380,6 +380,9 @@ static char *dm_spice_options(libxl__gc *gc,
+     if (spice->image_compression)
+         opt = libxl__sprintf(gc, "%s,image-compression=%s", opt, spice->image_compression);
+ 
++    if (spice->image_compression)
++        opt = libxl__sprintf(gc, "%s,streaming-video=%s", opt, spice->streaming_video);
++
+     return opt;
+ }
+ 
+diff --git a/tools/libxl/libxl_types.idl b/tools/libxl/libxl_types.idl
+index 0f8203b..7ae6ad8 100644
+--- a/tools/libxl/libxl_types.idl
++++ b/tools/libxl/libxl_types.idl
+@@ -204,6 +204,7 @@ libxl_spice_info = Struct("spice_info", [
+     ("clipboard_sharing", libxl_defbool),
+     ("usbredirection", integer),
+     ("image_compression", string),
++    ("streaming_video", string),
+     ])
+ 
+ libxl_sdl_info = Struct("sdl_info", [
+diff --git a/tools/libxl/xl_cmdimpl.c b/tools/libxl/xl_cmdimpl.c
+index 9d507a0..4a8d3d7 100644
+--- a/tools/libxl/xl_cmdimpl.c
++++ b/tools/libxl/xl_cmdimpl.c
+@@ -1684,6 +1684,8 @@ skip_vfb:
+         b_info->spice.usbredirection = l;
+     xlu_cfg_replace_string (config, "spice_image_compression",
+                             &b_info->spice.image_compression, 0);
++    xlu_cfg_replace_string (config, "spice_streaming_video",
++                            &b_info->spice.streaming_video, 0);
+ 
+     if (c_info->type == LIBXL_DOMAIN_TYPE_HVM) {
+         if (!xlu_cfg_get_string (config, "vga", &buf, 0)) {
+-- 
+1.9.1
+

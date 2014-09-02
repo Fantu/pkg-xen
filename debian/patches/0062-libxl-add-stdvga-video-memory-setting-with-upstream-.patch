@@ -1,0 +1,35 @@
+From ddfd1c5f637c913c5ff29539d24501db0034114f Mon Sep 17 00:00:00 2001
+Message-Id: <ddfd1c5f637c913c5ff29539d24501db0034114f.1408524797.git.fabio.fantoni@m2r.biz>
+In-Reply-To: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+References: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+From: Fabio Fantoni <fabio.fantoni@m2r.biz>
+Date: Fri, 9 May 2014 15:04:39 +0200
+Subject: [PATCH 2/9] libxl: add stdvga video memory setting with upstream qemu
+
+Currently we set the stdvga video memory with qemu-traditional only, add the
+necessary settings for qemu upstream too.
+
+Signed-off-by: Fabio Fantoni <fabio.fantoni@m2r.biz>
+Acked-by: Ian Campbell <ian.campbell@citrix.com>
+---
+ tools/libxl/libxl_dm.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/tools/libxl/libxl_dm.c b/tools/libxl/libxl_dm.c
+index 17dc48e..45c4497 100644
+--- a/tools/libxl/libxl_dm.c
++++ b/tools/libxl/libxl_dm.c
+@@ -507,7 +507,9 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
+ 
+         switch (b_info->u.hvm.vga.kind) {
+         case LIBXL_VGA_INTERFACE_TYPE_STD:
+-            flexarray_append_pair(dm_args, "-device", "VGA");
++            flexarray_append_pair(dm_args, "-device",
++                GCSPRINTF("VGA,vgamem_mb=%d",
++                libxl__sizekb_to_mb(b_info->video_memkb)));
+             break;
+         case LIBXL_VGA_INTERFACE_TYPE_CIRRUS:
+             flexarray_append_pair(dm_args, "-device",
+-- 
+1.9.1
+

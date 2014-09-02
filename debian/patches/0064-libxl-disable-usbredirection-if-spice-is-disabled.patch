@@ -1,0 +1,48 @@
+From eac6705b5b5061b90c52910c7dc59e4173f322e5 Mon Sep 17 00:00:00 2001
+Message-Id: <eac6705b5b5061b90c52910c7dc59e4173f322e5.1408524798.git.fabio.fantoni@m2r.biz>
+In-Reply-To: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+References: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+From: Fabio Fantoni <fabio.fantoni@m2r.biz>
+Date: Tue, 27 May 2014 14:46:52 +0200
+Subject: [PATCH 4/9] libxl: disable usbredirection if spice is disabled
+
+Now if usbredirection is enabled in domU's xl cfg is added also
+if spice is disabled and then usbredirection remain unused.
+This patch is usbredirection is enabled but spice not disable
+usbredirection and show a warning.
+
+Signed-off-by: Fabio Fantoni <fabio.fantoni@m2r.biz>
+---
+ tools/libxl/libxl_create.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/tools/libxl/libxl_create.c b/tools/libxl/libxl_create.c
+index 3cafe5c..d144ddb 100644
+--- a/tools/libxl/libxl_create.c
++++ b/tools/libxl/libxl_create.c
+@@ -292,6 +292,14 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
+         libxl_defbool_setdefault(&b_info->u.hvm.usb,                false);
+         libxl_defbool_setdefault(&b_info->u.hvm.xen_platform_pci,   true);
+ 
++        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
++        if (!libxl_defbool_val(b_info->u.hvm.spice.enable) &&
++            (b_info->u.hvm.spice.usbredirection > 0) ){
++            b_info->u.hvm.spice.usbredirection = 0;
++            LOG(WARN,"usbredirection is used only by spice, spice is disabled"
++            "therefore usbredirection is disabled.");
++        }
++
+         if (!b_info->u.hvm.usbversion &&
+             (b_info->u.hvm.spice.usbredirection > 0) )
+             b_info->u.hvm.usbversion = 2;
+@@ -324,7 +332,6 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
+             libxl_defbool_setdefault(&b_info->u.hvm.sdl.opengl, false);
+         }
+ 
+-        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
+         if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
+             libxl_defbool_setdefault(&b_info->u.hvm.spice.disable_ticketing,
+                                      false);
+-- 
+1.9.1
+

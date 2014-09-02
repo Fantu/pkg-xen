@@ -38,3 +38,11 @@
 0038-tools-ocaml-fix-build.diff.patch
 0039-tools-xenstore-compatibility.diff.patch
 0040-Set-library-path-to-multi-arch-location.patch
+0061-libxl-fix-cirrus-vga-video-memory-setting-with-upstr.patch
+0062-libxl-add-stdvga-video-memory-setting-with-upstream-.patch
+0063-libxl-Add-none-to-vga-parameter.patch
+0064-libxl-disable-usbredirection-if-spice-is-disabled.patch
+0065-libxl-Add-qxl-vga-interface-support-for-upstream-qem.patch
+0066-libxl-add-basic-spice-support-for-pv-domUs.patch
+0067-libxl-Spice-image-compression-setting-support-for-up.patch
+0068-libxl-Spice-streaming-video-setting-support-for-upst.patch

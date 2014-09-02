@@ -1,0 +1,518 @@
+From 7bf94f701a49ae6256211822b8c5267ff10a4c9f Mon Sep 17 00:00:00 2001
+Message-Id: <7bf94f701a49ae6256211822b8c5267ff10a4c9f.1408524798.git.fabio.fantoni@m2r.biz>
+In-Reply-To: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+References: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+From: Fabio Fantoni <fabio.fantoni@m2r.biz>
+Date: Mon, 24 Mar 2014 14:42:10 +0100
+Subject: [PATCH 7/9] libxl: add basic spice support for pv domUs
+
+This patch adds basic spice support for pv domUs.
+The qemu parameters are the same as the hvm ones and they works.
+Therefore xl cfg parameters are the same as the hvm ones except that
+features not supported yet by pv domUs (vdagent and usbredirection)
+are kept disabled by default.
+It also enables vfb and vkb required to have basic spice working.
+
+Signed-off-by: Fabio Fantoni <fabio.fantoni@m2r.biz>
+
+---
+
+Notes:
+- The vfb part is only a draft and needs to be improved.
+- Patch is tested and working, except for the pointer not
+  visible in some cases with pv domUs but always working.
+- I not use the api, test the u.hvm.spice retro-compatibility with
+  api is needed.
+
+Any feedback is appreciated.
+
+Changes in v6:
+- refresh libxl_create.c
+
+Changes in v5:
+- libxl_create.c: * don't copy u.hvm.spice in the newer if
+  the newer is already used
+  * set default for all spice bool options in any case
+  * spice features not supported in pv will be disabled and
+  will show a warning about them if was setted enabled
+- xl_cmdimpl.c: parse all spice options out of hvm part
+- libxl_dm.c: changed some forgotten u.hvm.spice to spice
+
+Changes in v4:
+- added libxl.h changes
+- libxl_create.c: added older u.hvm.spice compatibility
+  copying it in newer one
+
+Changes in v3:
+- xl.cfg.pod.5: moved spice out of hvm section and specified
+  the features for now hvm only.
+- libxl_types.idl: added spice struct out of keyedunion hvm only.
+- use new generic spice struct instead of hvm only ones.
+
+Changes in v2:
+- xl_cmdimpl.c: always set vnc and sdl toplevel parameters in &vfb
+  with vnc or spice enabled on pv domUs otherwise in some cases it
+  would fail with error for one bool default value missing.
+- libxl_dm.c: do not add -nographic if spice is enabled, even though
+  -nographic seems buggy in upstream qemu.
+---
+ docs/man/xl.cfg.pod.5       | 133 ++++++++++++++++++++++----------------------
+ tools/libxl/libxl.h         |  13 +++++
+ tools/libxl/libxl_create.c  |  47 +++++++++++-----
+ tools/libxl/libxl_dm.c      |  39 +++++++------
+ tools/libxl/libxl_types.idl |   3 +-
+ tools/libxl/xl_cmdimpl.c    |  44 ++++++++-------
+ tools/libxl/xl_sxp.c        |  12 ++--
+ 7 files changed, 164 insertions(+), 127 deletions(-)
+
+diff --git a/docs/man/xl.cfg.pod.5 b/docs/man/xl.cfg.pod.5
+index d451849..c70953e 100644
+--- a/docs/man/xl.cfg.pod.5
++++ b/docs/man/xl.cfg.pod.5
+@@ -1149,71 +1149,6 @@ it.
+ 
+ =back
+ 
+-=head3 Spice Graphics Support
+-
+-The following options control the features of SPICE.
+-
+-=over 4
+-
+-=item B<spice=BOOLEAN>
+-
+-Allow access to the display via the SPICE protocol.  This enables the
+-other SPICE-related settings.
+-
+-=item B<spicehost="ADDRESS">
+-
+-Specify the interface address to listen on if given, otherwise any
+-interface.
+-
+-=item B<spiceport=NUMBER>
+-
+-Specify the port to listen on by the SPICE server if the SPICE is
+-enabled.
+-
+-=item B<spicetls_port=NUMBER>
+-
+-Specify the secure port to listen on by the SPICE server if the SPICE
+-is enabled. At least one of the spiceport or spicetls_port must be
+-given if SPICE is enabled.  NB. the options depending on spicetls_port
+-have not been supported.
+-
+-=item B<spicedisable_ticketing=BOOLEAN>
+-
+-Enable client connection without password. When disabled, spicepasswd
+-must be set. The default is false (0).
+-
+-=item B<spicepasswd="PASSWORD">
+-
+-Specify the ticket password which is used by a client for connection.
+-
+-=item B<spiceagent_mouse=BOOLEAN>
+-
+-Whether SPICE agent is used for client mouse mode. The default is true (1)
+-(turn on)
+-
+-=item B<spicevdagent=BOOLEAN>
+-
+-Enables spice vdagent. The Spice vdagent is an optional component for
+-enhancing user experience and performing guest-oriented management
+-tasks. Its features includes: client mouse mode (no need to grab mouse
+-by client, no mouse lag), automatic adjustment of screen resolution,
+-copy and paste (text and image) between client and domU. It also
+-requires vdagent service installed on domU o.s. to work. The default is 0.
+-
+-=item B<spice_clipboard_sharing=BOOLEAN>
+-
+-Enables Spice clipboard sharing (copy/paste). It requires spicevdagent
+-enabled. The default is false (0).
+-
+-=item B<spiceusbredirection=NUMBER>
+-
+-Enables spice usbredirection. Creates NUMBER usbredirection channels
+-for redirection of up to 4 usb devices from spice client to domU's qemu.
+-It requires an usb controller and if not defined it will automatically adds
+-an usb2 controller. The default is disabled (0).
+-
+-=back
+-
+ =head3 Miscellaneous Emulated Hardware
+ 
+ =over 4
+@@ -1362,6 +1297,74 @@ option to the device-model.
+ 
+ =back
+ 
++=head2 Spice Graphics Support
++
++The following options control the features of SPICE.
++
++=over 4
++
++=item B<spice=BOOLEAN>
++
++Allow access to the display via the SPICE protocol.  This enables the
++other SPICE-related settings.
++
++=item B<spicehost="ADDRESS">
++
++Specify the interface address to listen on if given, otherwise any
++interface.
++
++=item B<spiceport=NUMBER>
++
++Specify the port to listen on by the SPICE server if the SPICE is
++enabled.
++
++=item B<spicetls_port=NUMBER>
++
++Specify the secure port to listen on by the SPICE server if the SPICE
++is enabled. At least one of the spiceport or spicetls_port must be
++given if SPICE is enabled.  NB. the options depending on spicetls_port
++have not been supported.
++
++=item B<spicedisable_ticketing=BOOLEAN>
++
++Enable client connection without password. When disabled, spicepasswd
++must be set. The default is false (0).
++
++=item B<spicepasswd="PASSWORD">
++
++Specify the ticket password which is used by a client for connection.
++
++=item B<spiceagent_mouse=BOOLEAN>
++
++Whether SPICE agent is used for client mouse mode. The default is true (1)
++(turn on)
++
++=item B<spicevdagent=BOOLEAN>
++
++Enables spice vdagent. The Spice vdagent is an optional component for
++enhancing user experience and performing guest-oriented management
++tasks. Its features includes: client mouse mode (no need to grab mouse
++by client, no mouse lag), automatic adjustment of screen resolution,
++copy and paste (text and image) between client and domU. It also
++requires vdagent service installed on domU o.s. to work. The default is 0.
++This feature is actually supported only by hvm domUs.
++
++=item B<spice_clipboard_sharing=BOOLEAN>
++
++Enables Spice clipboard sharing (copy/paste). It requires spicevdagent
++enabled. The default is false (0).
++This feature is actually supported only by hvm domUs.
++
++=item B<spiceusbredirection=NUMBER>
++
++Enables spice usbredirection. Creates NUMBER usbredirection channels
++for redirection of up to 4 usb devices from spice client to domU's qemu.
++It requires an usb controller and if not defined it will automatically adds
++an usb2 controller. The default is disabled (0).
++This feature is actually supported only by hvm domUs.
++
++=back
++
+ =head2 Keymaps
+ 
+ The keymaps available are defined by the device-model which you are
+diff --git a/tools/libxl/libxl.h b/tools/libxl/libxl.h
+index 06bbca6..78c7eed 100644
+--- a/tools/libxl/libxl.h
++++ b/tools/libxl/libxl.h
+@@ -325,6 +325,19 @@
+ #define LIBXL_HAVE_BUILDINFO_USBVERSION 1
+ 
+ /*
++ * LIBXL_HAVE_BUILDINFO_SPICE
++ *
++ * If this is defined, then the libxl_domain_build_info structure will
++ * contain spice, a libxl_spice_info struct instead of older hvm.spice one
++ * which is now deprecated.
++ *
++ * If it is set, callers may use spice to specify the spice values.
++ *
++ * If this is not defined, the spice struct does not exist.
++ */
++#define LIBXL_HAVE_BUILDINFO_SPICE 1
++
++/*
+  * LIBXL_HAVE_DEVICE_BACKEND_DOMNAME
+  *
+  * If this is defined, libxl_device_* structures containing a backend_domid
+diff --git a/tools/libxl/libxl_create.c b/tools/libxl/libxl_create.c
+index aec2baf..238284c 100644
+--- a/tools/libxl/libxl_create.c
++++ b/tools/libxl/libxl_create.c
+@@ -215,6 +215,19 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
+     if (!b_info->event_channels)
+         b_info->event_channels = 1023;
+ 
++    /* If older u.hvm.spice is enabled then propagate it to the top level */
++    libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
++    libxl_defbool_setdefault(&b_info->spice.enable, false);
++    if (!libxl_defbool_val(b_info->spice.enable) &&
++        libxl_defbool_val(b_info->u.hvm.spice.enable)) {
++            b_info->spice = b_info->u.hvm.spice;
++    }
++
++    libxl_defbool_setdefault(&b_info->spice.disable_ticketing, false);
++    libxl_defbool_setdefault(&b_info->spice.agent_mouse, true);
++    libxl_defbool_setdefault(&b_info->spice.vdagent, false);
++    libxl_defbool_setdefault(&b_info->spice.clipboard_sharing, false);
++
+     switch (b_info->type) {
+     case LIBXL_DOMAIN_TYPE_HVM:
+         if (b_info->shadow_memkb == LIBXL_MEMKB_DEFAULT)
+@@ -305,19 +318,18 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
+         libxl_defbool_setdefault(&b_info->u.hvm.usb,                false);
+         libxl_defbool_setdefault(&b_info->u.hvm.xen_platform_pci,   true);
+ 
+-        libxl_defbool_setdefault(&b_info->u.hvm.spice.enable, false);
+-        if (!libxl_defbool_val(b_info->u.hvm.spice.enable) &&
+-            (b_info->u.hvm.spice.usbredirection > 0) ){
+-            b_info->u.hvm.spice.usbredirection = 0;
++        if (!libxl_defbool_val(b_info->spice.enable) &&
++            (b_info->spice.usbredirection > 0) ){
++            b_info->spice.usbredirection = 0;
+             LOG(WARN,"usbredirection is used only by spice, spice is disabled"
+             "therefore usbredirection is disabled.");
+         }
+ 
+         if (!b_info->u.hvm.usbversion &&
+-            (b_info->u.hvm.spice.usbredirection > 0) )
++            (b_info->spice.usbredirection > 0) )
+             b_info->u.hvm.usbversion = 2;
+ 
+-        if ((b_info->u.hvm.usbversion || b_info->u.hvm.spice.usbredirection) &&
++        if ((b_info->u.hvm.usbversion || b_info->spice.usbredirection) &&
+             ( libxl_defbool_val(b_info->u.hvm.usb)
+             || b_info->u.hvm.usbdevice_list
+             || b_info->u.hvm.usbdevice) ){
+@@ -345,15 +357,6 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
+             libxl_defbool_setdefault(&b_info->u.hvm.sdl.opengl, false);
+         }
+ 
+-        if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
+-            libxl_defbool_setdefault(&b_info->u.hvm.spice.disable_ticketing,
+-                                     false);
+-            libxl_defbool_setdefault(&b_info->u.hvm.spice.agent_mouse, true);
+-            libxl_defbool_setdefault(&b_info->u.hvm.spice.vdagent, false);
+-            libxl_defbool_setdefault(&b_info->u.hvm.spice.clipboard_sharing,
+-                                     false);
+-        }
+-
+         libxl_defbool_setdefault(&b_info->u.hvm.nographic, false);
+ 
+         libxl_defbool_setdefault(&b_info->u.hvm.gfx_passthru, false);
+@@ -365,6 +368,20 @@ int libxl__domain_build_info_setdefault(libxl__gc *gc,
+             b_info->shadow_memkb = 0;
+         if (b_info->u.pv.slack_memkb == LIBXL_MEMKB_DEFAULT)
+             b_info->u.pv.slack_memkb = 0;
++
++        if (libxl_defbool_val(b_info->spice.vdagent)) {
++            libxl_defbool_set(&b_info->spice.vdagent, false);
++            LOG(WARN, "vdagent is not supported for PV guests");
++        }
++        if (libxl_defbool_val(b_info->spice.clipboard_sharing)) {
++            libxl_defbool_set(&b_info->spice.clipboard_sharing, false);
++            LOG(WARN, "clipboard sharing is not supported for PV guests");
++        }
++        if (b_info->spice.usbredirection > 0) {
++            b_info->spice.usbredirection = 0;
++            LOG(WARN, "usbredirection is not supported for PV guests");
++        }
++
+         break;
+     default:
+         LIBXL__LOG(CTX, LIBXL__LOG_ERROR,
+diff --git a/tools/libxl/libxl_dm.c b/tools/libxl/libxl_dm.c
+index de998d9..7966ed5 100644
+--- a/tools/libxl/libxl_dm.c
++++ b/tools/libxl/libxl_dm.c
+@@ -483,6 +483,21 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
+         flexarray_vappend(dm_args, "-k", keymap, NULL);
+     }
+ 
++    if (libxl_defbool_val(b_info->spice.enable)) {
++        const libxl_spice_info *spice = &b_info->spice;
++        char *spiceoptions = dm_spice_options(gc, spice);
++        if (!spiceoptions)
++            return NULL;
++
++        flexarray_append(dm_args, "-spice");
++        flexarray_append(dm_args, spiceoptions);
++        if (libxl_defbool_val(b_info->spice.vdagent)) {
++            flexarray_vappend(dm_args, "-device", "virtio-serial",
++                "-chardev", "spicevmc,id=vdagent,name=vdagent", "-device",
++                "virtserialport,chardev=vdagent,name=com.redhat.spice.0", NULL);
++        }
++    }
++
+     if (b_info->type == LIBXL_DOMAIN_TYPE_HVM) {
+         int ioemu_nics = 0;
+ 
+@@ -494,22 +509,6 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
+             flexarray_append(dm_args, "-nographic");
+         }
+ 
+-        if (libxl_defbool_val(b_info->u.hvm.spice.enable)) {
+-            const libxl_spice_info *spice = &b_info->u.hvm.spice;
+-            char *spiceoptions = dm_spice_options(gc, spice);
+-            if (!spiceoptions)
+-                return NULL;
+-
+-            flexarray_append(dm_args, "-spice");
+-            flexarray_append(dm_args, spiceoptions);
+-            if (libxl_defbool_val(b_info->u.hvm.spice.vdagent)) {
+-                flexarray_vappend(dm_args, "-device", "virtio-serial",
+-                    "-chardev", "spicevmc,id=vdagent,name=vdagent", "-device",
+-                    "virtserialport,chardev=vdagent,name=com.redhat.spice.0",
+-                    NULL);
+-            }
+-        }
+-
+         switch (b_info->u.hvm.vga.kind) {
+         case LIBXL_VGA_INTERFACE_TYPE_STD:
+             flexarray_append_pair(dm_args, "-device",
+@@ -582,9 +581,9 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
+                     "must be between 1 and 3", __func__);
+                 return NULL;
+             }
+-            if (b_info->u.hvm.spice.usbredirection >= 0 &&
+-                b_info->u.hvm.spice.usbredirection < 5) {
+-                for (i = 1; i <= b_info->u.hvm.spice.usbredirection; i++)
++            if (b_info->spice.usbredirection >= 0 &&
++                b_info->spice.usbredirection < 5) {
++                for (i = 1; i <= b_info->spice.usbredirection; i++)
+                     flexarray_vappend(dm_args, "-chardev", libxl__sprintf(gc,
+                         "spicevmc,name=usbredir,id=usbrc%d", i), "-device",
+                         libxl__sprintf(gc, "usb-redir,chardev=usbrc%d,"
+@@ -645,7 +644,7 @@ static char ** libxl__build_device_model_args_new(libxl__gc *gc,
+             flexarray_append(dm_args, "-gfx_passthru");
+         }
+     } else {
+-        if (!sdl && !vnc) {
++        if (!sdl && !vnc && !libxl_defbool_val(b_info->spice.enable)) {
+             flexarray_append(dm_args, "-nographic");
+         }
+     }
+diff --git a/tools/libxl/libxl_types.idl b/tools/libxl/libxl_types.idl
+index afd8182..ac2764a 100644
+--- a/tools/libxl/libxl_types.idl
++++ b/tools/libxl/libxl_types.idl
+@@ -333,8 +333,9 @@ libxl_domain_build_info = Struct("domain_build_info",[
+     ("ioports",          Array(libxl_ioport_range, "num_ioports")),
+     ("irqs",             Array(uint32, "num_irqs")),
+     ("iomem",            Array(libxl_iomem_range, "num_iomem")),
+-    ("claim_mode",	     libxl_defbool),
++    ("claim_mode",       libxl_defbool),
+     ("event_channels",   uint32),
++    ("spice",            libxl_spice_info),
+     ("u", KeyedUnion(None, libxl_domain_type, "type",
+                 [("hvm", Struct(None, [("firmware",         string),
+                                        ("bios",             libxl_bios_type),
+diff --git a/tools/libxl/xl_cmdimpl.c b/tools/libxl/xl_cmdimpl.c
+index 4adb18e..0ae0f86 100644
+--- a/tools/libxl/xl_cmdimpl.c
++++ b/tools/libxl/xl_cmdimpl.c
+@@ -1638,6 +1638,8 @@ skip_vfb:
+ 
+ #undef parse_extra_args
+ 
++    xlu_cfg_get_defbool (config, "spice", &b_info->spice.enable, 0);
++
+     /* If we've already got vfb=[] for PV guest then ignore top level
+      * VNC config. */
+     if (c_info->type == LIBXL_DOMAIN_TYPE_PV && !d_config->num_vfbs) {
+@@ -1646,7 +1648,7 @@ skip_vfb:
+         if (!xlu_cfg_get_long (config, "vnc", &l, 0))
+             vnc_enabled = l;
+ 
+-        if (vnc_enabled) {
++        if (vnc_enabled || libxl_defbool_val(b_info->spice.enable)) {
+             libxl_device_vfb *vfb;
+             libxl_device_vkb *vkb;
+ 
+@@ -1661,6 +1663,26 @@ skip_vfb:
+     } else
+         parse_top_level_vnc_options(config, &b_info->u.hvm.vnc);
+ 
++    if (!xlu_cfg_get_long (config, "spiceport", &l, 0))
++        b_info->spice.port = l;
++    if (!xlu_cfg_get_long (config, "spicetls_port", &l, 0))
++        b_info->spice.tls_port = l;
++    xlu_cfg_replace_string (config, "spicehost",
++                            &b_info->spice.host, 0);
++    xlu_cfg_get_defbool(config, "spicedisable_ticketing",
++                        &b_info->spice.disable_ticketing, 0);
++    xlu_cfg_replace_string(config, "spicepasswd",
++                            &b_info->spice.passwd, 0);
++    xlu_cfg_get_defbool(config, "spiceagent_mouse",
++                        &b_info->spice.agent_mouse, 0);
++    /* These SPICE features are not supported by PV domU */
++    xlu_cfg_get_defbool(config, "spicevdagent",
++                        &b_info->spice.vdagent, 0);
++    xlu_cfg_get_defbool(config, "spice_clipboard_sharing",
++                        &b_info->spice.clipboard_sharing, 0);
++    if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
++        b_info->spice.usbredirection = l;
++
+     if (c_info->type == LIBXL_DOMAIN_TYPE_HVM) {
+         if (!xlu_cfg_get_string (config, "vga", &buf, 0)) {
+             if (!strcmp(buf, "stdvga")) {
+@@ -1682,25 +1704,7 @@ skip_vfb:
+         xlu_cfg_replace_string (config, "keymap", &b_info->u.hvm.keymap, 0);
+         xlu_cfg_get_defbool(config, "sdl", &b_info->u.hvm.sdl.enable, 0);
+         xlu_cfg_get_defbool(config, "opengl", &b_info->u.hvm.sdl.opengl, 0);
+-        xlu_cfg_get_defbool (config, "spice", &b_info->u.hvm.spice.enable, 0);
+-        if (!xlu_cfg_get_long (config, "spiceport", &l, 0))
+-            b_info->u.hvm.spice.port = l;
+-        if (!xlu_cfg_get_long (config, "spicetls_port", &l, 0))
+-            b_info->u.hvm.spice.tls_port = l;
+-        xlu_cfg_replace_string (config, "spicehost",
+-                                &b_info->u.hvm.spice.host, 0);
+-        xlu_cfg_get_defbool(config, "spicedisable_ticketing",
+-                            &b_info->u.hvm.spice.disable_ticketing, 0);
+-        xlu_cfg_replace_string (config, "spicepasswd",
+-                                &b_info->u.hvm.spice.passwd, 0);
+-        xlu_cfg_get_defbool(config, "spiceagent_mouse",
+-                            &b_info->u.hvm.spice.agent_mouse, 0);
+-        xlu_cfg_get_defbool(config, "spicevdagent",
+-                            &b_info->u.hvm.spice.vdagent, 0);
+-        xlu_cfg_get_defbool(config, "spice_clipboard_sharing",
+-                            &b_info->u.hvm.spice.clipboard_sharing, 0);
+-        if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
+-            b_info->u.hvm.spice.usbredirection = l;
++
+         xlu_cfg_get_defbool(config, "nographic", &b_info->u.hvm.nographic, 0);
+         xlu_cfg_get_defbool(config, "gfx_passthru", 
+                             &b_info->u.hvm.gfx_passthru, 0);
+diff --git a/tools/libxl/xl_sxp.c b/tools/libxl/xl_sxp.c
+index a16a025..e9eed99 100644
+--- a/tools/libxl/xl_sxp.c
++++ b/tools/libxl/xl_sxp.c
+@@ -127,14 +127,14 @@ void printf_info_sexp(int domid, libxl_domain_config *d_config)
+         printf("\t\t\t(nographic %s)\n",
+                libxl_defbool_to_string(b_info->u.hvm.nographic));
+         printf("\t\t\t(spice %s)\n",
+-               libxl_defbool_to_string(b_info->u.hvm.spice.enable));
+-        printf("\t\t\t(spiceport %d)\n", b_info->u.hvm.spice.port);
+-        printf("\t\t\t(spicetls_port %d)\n", b_info->u.hvm.spice.tls_port);
+-        printf("\t\t\t(spicehost %s)\n", b_info->u.hvm.spice.host);
++               libxl_defbool_to_string(b_info->spice.enable));
++        printf("\t\t\t(spiceport %d)\n", b_info->spice.port);
++        printf("\t\t\t(spicetls_port %d)\n", b_info->spice.tls_port);
++        printf("\t\t\t(spicehost %s)\n", b_info->spice.host);
+         printf("\t\t\t(spicedisable_ticketing %s)\n",
+-               libxl_defbool_to_string(b_info->u.hvm.spice.disable_ticketing));
++               libxl_defbool_to_string(b_info->spice.disable_ticketing));
+         printf("\t\t\t(spiceagent_mouse %s)\n",
+-               libxl_defbool_to_string(b_info->u.hvm.spice.agent_mouse));
++               libxl_defbool_to_string(b_info->spice.agent_mouse));
+ 
+         printf("\t\t\t(device_model %s)\n", b_info->device_model ? : "default");
+         printf("\t\t\t(gfx_passthru %s)\n",
+-- 
+1.9.1
+

@@ -1,0 +1,104 @@
+From 85d8bc3e5efea6984990938fd2f6e32a759e6736 Mon Sep 17 00:00:00 2001
+Message-Id: <85d8bc3e5efea6984990938fd2f6e32a759e6736.1408524798.git.fabio.fantoni@m2r.biz>
+In-Reply-To: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+References: <5019400eabb88f061b53c2c3dcb45d94efb08350.1408524797.git.fabio.fantoni@m2r.biz>
+From: Fabio Fantoni <fabio.fantoni@m2r.biz>
+Date: Wed, 14 May 2014 15:57:21 +0200
+Subject: [PATCH 8/9] libxl: Spice image compression setting support for
+ upstream qemu
+
+Usage:
+spice_image_compression=[auto_glz|auto_lz|quic|glz|lz|off]
+
+Specifies what image compression is to be used by spice (if given),
+otherwise the qemu default will be used.
+
+Signed-off-by: Fabio Fantoni <fabio.fantoni@m2r.biz>
+---
+ docs/man/xl.cfg.pod.5       |  5 +++++
+ tools/libxl/libxl.h         | 11 +++++++++++
+ tools/libxl/libxl_dm.c      |  3 +++
+ tools/libxl/libxl_types.idl |  1 +
+ tools/libxl/xl_cmdimpl.c    |  2 ++
+ 5 files changed, 22 insertions(+)
+
+diff --git a/docs/man/xl.cfg.pod.5 b/docs/man/xl.cfg.pod.5
+index c70953e..10e9afb 100644
+--- a/docs/man/xl.cfg.pod.5
++++ b/docs/man/xl.cfg.pod.5
+@@ -1363,6 +1363,11 @@ It requires an usb controller and if not defined it will automatically adds
+ an usb2 controller. The default is disabled (0).
+ This feature is actually supported only by hvm domUs.
+ 
++=item B<spice_image_compression=[auto_glz|auto_lz|quic|glz|lz|off]>
++
++Specifies what image compression is to be used by spice (if given), otherwise
++the qemu default will be used.
++
+ =back
+ 
+ =head2 Keymaps
+diff --git a/tools/libxl/libxl.h b/tools/libxl/libxl.h
+index 78c7eed..82d6e03 100644
+--- a/tools/libxl/libxl.h
++++ b/tools/libxl/libxl.h
+@@ -400,6 +400,17 @@
+ #define LIBXL_HAVE_SPICE_USBREDIREDIRECTION 1
+ 
+ /*
++ * LIBXL_HAVE_SPICE_IMAGECOMPRESSION
++ *
++ * If defined, then the libxl_spice_info structure will contain a string type
++ * field: image_compression. This value defines what Spice image compression
++ * is used.
++ *
++ * If this is not defined, the Spice image compression setting support is ignored.
++ */
++#define LIBXL_HAVE_SPICE_IMAGECOMPRESSION 1
++
++/*
+  * LIBXL_HAVE_DOMAIN_CREATE_RESTORE_PARAMS 1
+  *
+  * If this is defined, libxl_domain_create_restore()'s API has changed to
+diff --git a/tools/libxl/libxl_dm.c b/tools/libxl/libxl_dm.c
+index 7966ed5..8037208 100644
+--- a/tools/libxl/libxl_dm.c
++++ b/tools/libxl/libxl_dm.c
+@@ -377,6 +377,9 @@ static char *dm_spice_options(libxl__gc *gc,
+     if (!libxl_defbool_val(spice->clipboard_sharing))
+         opt = libxl__sprintf(gc, "%s,disable-copy-paste", opt);
+ 
++    if (spice->image_compression)
++        opt = libxl__sprintf(gc, "%s,image-compression=%s", opt, spice->image_compression);
++
+     return opt;
+ }
+ 
+diff --git a/tools/libxl/libxl_types.idl b/tools/libxl/libxl_types.idl
+index ac2764a..0f8203b 100644
+--- a/tools/libxl/libxl_types.idl
++++ b/tools/libxl/libxl_types.idl
+@@ -203,6 +203,7 @@ libxl_spice_info = Struct("spice_info", [
+     ("vdagent",     libxl_defbool),
+     ("clipboard_sharing", libxl_defbool),
+     ("usbredirection", integer),
++    ("image_compression", string),
+     ])
+ 
+ libxl_sdl_info = Struct("sdl_info", [
+diff --git a/tools/libxl/xl_cmdimpl.c b/tools/libxl/xl_cmdimpl.c
+index 0ae0f86..9d507a0 100644
+--- a/tools/libxl/xl_cmdimpl.c
++++ b/tools/libxl/xl_cmdimpl.c
+@@ -1682,6 +1682,8 @@ skip_vfb:
+                         &b_info->spice.clipboard_sharing, 0);
+     if (!xlu_cfg_get_long (config, "spiceusbredirection", &l, 0))
+         b_info->spice.usbredirection = l;
++    xlu_cfg_replace_string (config, "spice_image_compression",
++                            &b_info->spice.image_compression, 0);
+ 
+     if (c_info->type == LIBXL_DOMAIN_TYPE_HVM) {
+         if (!xlu_cfg_get_string (config, "vga", &buf, 0)) {
+-- 
+1.9.1
+
